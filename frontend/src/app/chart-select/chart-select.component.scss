@@ -1,0 +1,39 @@
+.dropdown-container {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    padding: 10px;
+    background: #f8f9fa;
+    border-radius: 8px;
+    box-shadow: 0px 4px 6px rgba(0, 0, 0, 0.1);
+  
+    label {
+      font-weight: bold;
+      margin-bottom: 5px;
+    }
+  
+    select {
+      padding: 8px;
+      font-size: 1rem;
+      border: 1px solid #ccc;
+      border-radius: 5px;
+    }
+  }
+  .dropdown-container {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  padding: 10px;
+  max-width: 300px;
+
+  label {
+    font-weight: bold;
+  }
+
+  select {
+    padding: 5px;
+    font-size: 14px;
+  }
+}
+
+  

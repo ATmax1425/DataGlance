@@ -1,0 +1,26 @@
+import { Component } from '@angular/core';
+import { RouterOutlet } from '@angular/router';
+import { HeaderComponent } from './header/header.component';
+import { ChartSelectComponent } from './chart-select/chart-select.component';
+import { VisualizeComponent } from './visualize/visualize.component';
+
+@Component({
+    selector: 'app-root',
+    standalone: true,
+    imports: [RouterOutlet, HeaderComponent, ChartSelectComponent, VisualizeComponent],
+    templateUrl: './app.component.html',
+    styleUrl: './app.component.scss'
+})
+export class AppComponent {
+  title = 'frontend';
+  chartData: any;
+
+  onChartSelectionChange(event: { database: string; chart: string }) {
+    console.log('Selected Database:', event.database);
+    console.log('Selected Chart Type:', event.chart);
+  }
+
+  onChartDataReceived(event: any) {
+    this.chartData = event; // Store received chart data
+  }
+}

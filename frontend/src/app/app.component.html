@@ -1,0 +1,14 @@
+<app-header></app-header>
+
+<table>
+  <tr>
+    <td>
+      <app-chart-select (chartDataEvent)="onChartDataReceived($event)"></app-chart-select>
+    </td>
+    <td>
+      <app-visualize [chartData]="chartData"></app-visualize>
+    </td>
+  </tr>
+</table>
+
+<router-outlet></router-outlet>

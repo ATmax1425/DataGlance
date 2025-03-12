@@ -1,0 +1,30 @@
+table {
+    width: 100%;
+    border-collapse: collapse;
+    margin-top: 20px;
+  
+    td {
+      width: 50%;
+      padding: 15px;
+      vertical-align: top; // Ensures proper alignment
+    }
+  }
+  
+  // Responsive Design for Small Screens
+  @media (max-width: 768px) {
+    table {
+      display: block;
+      width: 100%;
+    }
+  
+    tr {
+      display: flex;
+      flex-direction: column;
+    }
+  
+    td {
+      width: 100%;
+      padding: 10px;
+    }
+  }
+  
