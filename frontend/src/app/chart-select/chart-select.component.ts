@@ -19,40 +19,68 @@ export class ChartSelectComponent implements OnInit{
   selectedChart: string = '';
   formData: any = {};
 
-  columns: { numerical: string[], categorical: string[] } = { numerical: [], categorical: [] };
+  columns: string[] = [];
+  numericalColumns: string[] = [];
+  categoricalColumns: string[] = [];
+  fieldsMap: any = {};
   requiredFields: string[] = [];
+  optionalFields: string[] = [];
 
   @Output() chartDataEvent = new EventEmitter<any>();
 
   constructor(private datasetService: DatasetService) {}
 
   ngOnInit() {
-    // Fetch dataset names from FastAPI
-    this.datasetService.getAvailableDatasets().subscribe(response => {
-      console.log("API Response:", response);
+    this.datasetService.getAvailableDatasets().subscribe((response) => {
+      console.log("getAvailableDatasets Response:", response);
       this.databases = response.available_datasets;
       this.chartTypes = response.available_charts;
       this.selectedDatabase = this.databases.length > 0 ? this.databases[0] : '';
       this.selectedChart = this.chartTypes.length > 0? this.chartTypes[0] : '';
+      if (this.selectedDatabase && this.selectedChart){
+        this.fetchChartRequirements();
+      }
     });
   }
 
-  onDatabaseChange(): void {
-    this.columns = { numerical: [], categorical: [] };
-    this.requiredFields = [];
+  fetchChartRequirements(){
+    this.datasetService.getChartRequirements(
+      this.selectedDatabase,
+      this.selectedChart
+    ).subscribe((data) => {
+      this.fieldsMap = data.required_keys
+      this.requiredFields = data.required_keys.required
+      this.optionalFields = data.required_keys.optional || []
+      this.columns = data.columns
+      this.numericalColumns = data.numerical_columns
+      this.categoricalColumns = data.categorical_columns
+    });
   }
 
-  onChartChange(): void {
+  getFilteredColumns(field: string): string[] {
+    let data_types_options = this.fieldsMap.data_types
+    let custom_options = this.fieldsMap.custom_options || {}
+    let field_options: string[] = []
+    if (field in data_types_options){
+      if (data_types_options[field].includes('numerical')){
+        field_options = field_options.concat(this.numericalColumns)
+      }
+      if (data_types_options[field].includes('categorical')){
+        field_options = field_options.concat(this.categoricalColumns)
+      }
+      return field_options
+    }
+    else if (field in custom_options){
+      field_options.concat(custom_options.get(field).get("options"))
+      return field_options
+    }
+    return [];
+  }
+
+  onChange(): void {
     if (this.selectedDatabase && this.selectedChart) {
-      this.datasetService.getChartRequirements({
-        dataset: this.selectedDatabase,
-        chart: this.selectedChart
-      }).subscribe((data) => {
-        this.requiredFields = data.required_keys;
-        this.columns.numerical = data.numerical_columns;
-        this.columns.categorical = data.categorical_columns;
-        this.formData = {};
-      });
+      this.fetchChartRequirements();
+      this.formData = {};
     }
   }
 
@@ -60,11 +88,8 @@ export class ChartSelectComponent implements OnInit{
     const requestData = {
       dataset: this.selectedDatabase,
       chart: this.selectedChart,
-      ...this.formData
+      fields : this.formData
     };
-
-    this.datasetService.getChartRequirements(requestData).subscribe((chartData) => {
-      this.chartDataEvent.emit(chartData); // Send data to parent (App Component)
-    });
+    this.chartDataEvent.emit(requestData);
   }
 }

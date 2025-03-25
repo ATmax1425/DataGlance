@@ -13,7 +13,7 @@ import { VisualizeComponent } from './visualize/visualize.component';
 })
 export class AppComponent {
   title = 'frontend';
-  chartData: any;
+  chartOptions: any;
 
   onChartSelectionChange(event: { database: string; chart: string }) {
     console.log('Selected Database:', event.database);
@@ -21,6 +21,6 @@ export class AppComponent {
   }
 
   onChartDataReceived(event: any) {
-    this.chartData = event; // Store received chart data
+    this.chartOptions = event; // Store received chart data
   }
 }
