@@ -63,8 +63,8 @@ chart_requirements = {
         "required": ["x_value", "y_value"],
         "optional": ["hue"],
         "data_types": {
-            "x_value": ["categorical"],
-            "y_value": ["numerical"],
+            "x_value": ["numerical"],
+            "y_value": ["categorical"],
             "hue": ["categorical"]
         }
     },
@@ -76,15 +76,15 @@ chart_requirements = {
             "hue": ["categorical"]
         }
     },
-    "boxplot": {
-        "required": ["x_value", "y_value"],
-        "optional": ["hue"],
-        "data_types": {
-            "x_value": ["categorical"],
-            "y_value": ["numerical"],
-            "hue": ["categorical"]
-        }
-    },
+    # "boxplot": {
+    #     "required": ["x_value", "y_value"],
+    #     "optional": ["hue"],
+    #     "data_types": {
+    #         "x_value": ["categorical"],
+    #         "y_value": ["numerical"],
+    #         "hue": ["categorical"]
+    #     }
+    # },p
     "heatmap": {
         "required": ["x_value", "y_value"],
         "optional": ["agg_func", "hue"],
@@ -207,7 +207,7 @@ def get_chart_requirements(request_data: dict):
     numerical_columns = [col for col in df.columns if pd.api.types.is_numeric_dtype(df[col])]
     categorical_columns = [col for col in df.columns if pd.api.types.is_categorical_dtype(df[col]) or pd.api.types.is_object_dtype(df[col])]
 
-    print({
+    logger.info({
         "required_keys": chart_requirements[chart_type],
         "columns": columns,
         "numerical_columns": numerical_columns,
@@ -249,8 +249,6 @@ def generate_chart_data(request_data: dict):
             logger.error(error_mes)
             raise HTTPException(status_code=400, detail=error_mes)
 
-    df = dataset_map[dataset_name]
-
     x_value = request_data["fields"].get("x_value")
     y_value = request_data["fields"].get("y_value", None)
     hue = request_data["fields"].get("hue", None)
@@ -258,16 +256,18 @@ def generate_chart_data(request_data: dict):
     bins = request_data["fields"].get("bins", 10)
     agg_func = request_data["fields"].get("agg_func", "mean")
 
+    df = dataset_map[dataset_name]
+
     for col in [x_value, y_value, hue, size]:
         if col and col not in df.columns:
             error_mes = f"Invalid column selected: {col}"
             logger.error(error_mes)
             raise HTTPException(status_code=400, detail=error_mes)
 
-    chart_data = {"labels": df[x_value].astype(str).tolist()}
+    chartjs_data = {"labels": df[x_value].astype(str).tolist()}
 
     if chart_type == "scatter":
-        chart_data = {
+        chartjs_data = {
             "labels": df[x_value].tolist(),
             "datasets": [{
                 "label": y_value,
@@ -278,7 +278,10 @@ def generate_chart_data(request_data: dict):
         }
 
     elif chart_type == "line":
-        chart_data = {
+        df.sort_values(x_value, inplace=True)
+        # df["x_value_round"] = (df[x_value] * 2).round() / 2
+        # filtered_df = df.groupby("x_value_round")[x_value].agg([list, "mean"]).reset_index()
+        chartjs_data = {
             "labels": df[x_value].tolist(),
             "datasets": [{
                 "label": y_value,
@@ -291,7 +294,7 @@ def generate_chart_data(request_data: dict):
     elif chart_type == "histogram":
         counts, bin_edges = np.histogram(df[x_value], bins=bins)
         bin_labels = [f"{bin_edges[i]}-{bin_edges[i+1]}" for i in range(len(bin_edges) - 1)]
-        chart_data = {
+        chartjs_data = {
             "labels": bin_labels,
             "datasets": [{
                 "label": x_value,
@@ -302,7 +305,7 @@ def generate_chart_data(request_data: dict):
         }
 
     elif chart_type == "bar":
-        chart_data = {
+        chartjs_data = {
             "labels": df[x_value].tolist(),
             "datasets": [{
                 "label": y_value,
@@ -314,7 +317,7 @@ def generate_chart_data(request_data: dict):
 
     elif chart_type == "countplot":
         counts = df[x_value].value_counts().sort_index()
-        chart_data = {
+        chartjs_data = {
             "labels": counts.index.tolist(),
             "datasets": [{
                 "label": x_value,
@@ -341,7 +344,7 @@ def generate_chart_data(request_data: dict):
             }
 
         boxplot_stats = calculate_boxplot_stats(df[y_value])
-        chart_data = {
+        chartjs_data = {
             "labels": [x_value],
             "datasets": [{
                 "label": y_value,
@@ -353,7 +356,7 @@ def generate_chart_data(request_data: dict):
 
     elif chart_type == "heatmap":
         heatmap_data = df.pivot_table(index=x_value, columns=y_value, aggfunc=agg_func, fill_value=0)
-        chart_data = {
+        chartjs_data = {
             "labels": heatmap_data.columns.tolist(),
             "datasets": [{
                 "label": f"{x_value} vs {y_value}",
@@ -364,7 +367,7 @@ def generate_chart_data(request_data: dict):
         }
 
     elif chart_type == "pie":
-        chart_data = {
+        chartjs_data = {
             "labels": df[x_value].tolist(),
             "datasets": [{
                 "label": y_value,
@@ -378,7 +381,7 @@ def generate_chart_data(request_data: dict):
         }
 
     elif chart_type == "donut":
-        chart_data = {
+        chartjs_data = {
             "labels": df[x_value].tolist(),
             "datasets": [{
                 "label": y_value,
@@ -393,7 +396,7 @@ def generate_chart_data(request_data: dict):
 
     elif chart_type == "area":
         area_data = df.groupby(x_value)[y_value].sum().reset_index()
-        chart_data = {
+        chartjs_data = {
             "labels": area_data[x_value].tolist(),
             "datasets": [{
                 "label": y_value,
@@ -405,7 +408,7 @@ def generate_chart_data(request_data: dict):
         }
 
     elif chart_type == "bubble":
-        chart_data = {
+        chartjs_data = {
             "labels": df[x_value].tolist(),
             "datasets": [{
                 "label": y_value,
@@ -418,7 +421,7 @@ def generate_chart_data(request_data: dict):
     elif chart_type == "regplot":
         slope, intercept, r_value, p_value, std_err = linregress(df[x_value], df[y_value])
         regression_line = slope * df[x_value] + intercept
-        chart_data = {
+        chartjs_data = {
             "labels": df[x_value].tolist(),
             "datasets": [
                 {
@@ -445,7 +448,7 @@ def generate_chart_data(request_data: dict):
 
     response_data = {
         "chartType": chart_type,
-        "chartData": chart_data,
+        "chartData": chartjs_data,
     }
 
     return response_data

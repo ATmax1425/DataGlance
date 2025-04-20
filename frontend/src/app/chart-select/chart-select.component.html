@@ -19,7 +19,16 @@
     @for (field of requiredFields; track field) {
       <div>
         <label>{{ field }}:</label>
-
+        <select [(ngModel)]="formData[field]">
+          @for (col of getFilteredColumns(field); track col){
+            <option [value]="col">{{ col }}</option>
+          }
+        </select>
+      </div>
+    }
+    @for (field of optionalFields; track field){
+      <div>
+        <label>{{ field }}:</label>
         @if (field === 'bins') {
           <input type="number" [(ngModel)]="formData.bins" min="1" max="50">
         }
