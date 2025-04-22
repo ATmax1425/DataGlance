@@ -2,21 +2,25 @@ import { Component, EventEmitter, Output, OnInit } from '@angular/core';
 import { DatasetService } from '../services/dataset.service';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
+import { ChartTypeSelectComponent } from "./chart-type-select/chart-type-select.component";
+import { ParameterSelectComponent } from "./parameter-select/parameter-select.component";
 
 @Component({
   selector: 'app-chart-select',
-  imports: [CommonModule, FormsModule],
+  imports: [CommonModule, FormsModule, ChartTypeSelectComponent, ParameterSelectComponent],
   standalone: true,
   templateUrl: './chart-select.component.html',
   styleUrl: './chart-select.component.scss'
 })
 export class ChartSelectComponent implements OnInit{
-  databases : string[] = [];
+  databases : any[] = [];
   // chartTypes = ['Scatter', 'Line', 'Histogram', 'KDE', 'ECD', 'Bar', 'Countplot'];
-  chartTypes : string[] = [];
+  chartTypes : any[] = [];
 
   selectedDatabase: string = '';
+  selectedDatabaseIndex: number = 0;
   selectedChart: string = '';
+  selectedChartIndex: number = 0;
   formData: any = {};
 
   columns: string[] = [];
@@ -35,9 +39,9 @@ export class ChartSelectComponent implements OnInit{
       console.log("getAvailableDatasets Response:", response);
       this.databases = response.available_datasets;
       this.chartTypes = response.available_charts;
-      this.selectedDatabase = this.databases.length > 0 ? this.databases[0] : '';
-      this.selectedChart = this.chartTypes.length > 0? this.chartTypes[0] : '';
-      if (this.selectedDatabase && this.selectedChart){
+      this.selectedDatabaseIndex = this.databases.length > 0 ? this.databases[0]["index"] : 0;
+      this.selectedChartIndex = this.chartTypes.length > 0? this.chartTypes[0]["index"] : 0;
+      if (this.selectedDatabase && this.selectedChartIndex){
         this.fetchChartRequirements();
       }
     });

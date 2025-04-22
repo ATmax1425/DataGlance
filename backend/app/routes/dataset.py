@@ -2,154 +2,28 @@ from fastapi import APIRouter, HTTPException
 from scipy.stats import linregress
 import pandas as pd
 import numpy as np
-import seaborn as sns
 import logging
+
+from app.config.charts_config import plot_types, chart_requirements, get_charts_name_type
+from app.config.database_config import get_databases_name, get_database, get_database_cols
 
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
 
 router = APIRouter()
 
-dataset_map = {
-    "tips": sns.load_dataset("tips"),
-    "titanic": sns.load_dataset("titanic"),
-    "flights": sns.load_dataset("flights"),
-    "planets": sns.load_dataset("planets"),
-    "diamonds": sns.load_dataset("diamonds"),
-    "car_crashes": sns.load_dataset("car_crashes"),
-}
-
 # Filling NaN values
-for dataset_name, dataset in dataset_map.items():
-    numeric_columns = dataset.select_dtypes(include=["number"]).columns
-    dataset[numeric_columns] = dataset[numeric_columns].fillna(dataset[numeric_columns].median())
-    
-    categorical_columns = dataset.select_dtypes(include=["object", "category"]).columns
-    for col in categorical_columns:
-        dataset[col].fillna(dataset[col].mode()[0], inplace=True)
-    
-    dataset_map[dataset_name] = dataset
 
-chart_requirements = {
-    "scatter": {
-        "required": ["x_value", "y_value"],
-        "optional": ["hue", "size"],
-        "data_types": {
-            "x_value": ["numerical", "categorical"],
-            "y_value": ["numerical"],
-            "hue": ["categorical"],
-            "size": ["numerical"]
-        }
-    },
-    "line": {
-        "required": ["x_value", "y_value"],
-        "optional": ["hue"],
-        "data_types": {
-            "x_value": ["numerical", "categorical"],
-            "y_value": ["numerical"],
-            "hue": ["categorical"]
-        }
-    },
-    "histogram": {
-        "required": ["x_value"],
-        "optional": ["bins", "hue"],
-        "data_types": {
-            "x_value": ["numerical"],
-            "hue": ["categorical"],
-            "bins": []
-        }
-    },
-    "bar": {
-        "required": ["x_value", "y_value"],
-        "optional": ["hue"],
-        "data_types": {
-            "x_value": ["numerical"],
-            "y_value": ["categorical"],
-            "hue": ["categorical"]
-        }
-    },
-    "countplot": {
-        "required": ["x_value"],
-        "optional": ["hue"],
-        "data_types": {
-            "x_value": ["categorical"],
-            "hue": ["categorical"]
-        }
-    },
-    # "boxplot": {
-    #     "required": ["x_value", "y_value"],
-    #     "optional": ["hue"],
-    #     "data_types": {
-    #         "x_value": ["categorical"],
-    #         "y_value": ["numerical"],
-    #         "hue": ["categorical"]
-    #     }
-    # },p
-    "heatmap": {
-        "required": ["x_value", "y_value"],
-        "optional": ["agg_func", "hue"],
-        "custom_options": {
-            "agg_func": {
-                "options": ["mean", "sum", "count", "min", "max", "median"],
-            }
-        },
-        "data_types": {
-            "x_value": ["categorical"],
-            "y_value": ["categorical"],
-            "hue": ["categorical"]
-        }
-    },
-    "pie": {
-        "required": ["x_value", "y_value"],
-        "data_types": {
-            "x_value": ["categorical"],
-            "y_value": ["numerical"]
-        }
-    },
-    "donut": {
-        "required": ["x_value", "y_value"],
-        "data_types": {
-            "x_value": ["categorical"],
-            "y_value": ["numerical"]
-        }
-    },
-    "area": {
-        "required": ["x_value", "y_value"],
-        "optional": ["hue"],
-        "data_types": {
-            "x_value": ["numerical", "categorical"],
-            "y_value": ["numerical"],
-            "hue": ["categorical"]
-        }
-    },
-    "bubble": {
-        "required": ["x_value", "y_value", "size"],
-        "optional": ["hue"],
-        "data_types": {
-            "x_value": ["numerical", "categorical"],
-            "y_value": ["numerical"],
-            "size": ["numerical"],
-            "hue": ["categorical"]
-        }
-    },
-    "regplot": {
-        "required": ["x_value", "y_value"],
-        "data_types": {
-            "x_value": ["numerical"],
-            "y_value": ["numerical"]
-        }
-    }
-}
 
-chart_conversion_map = {
-    "histogram": "bar",
-    "countplot": "bar",
-    "boxplot": "scatter",
-    "heatmap": "bar",
-    "regplot": "scatter",
-    "area": "line",
-    "violin": "scatter",
-}
+# chart_conversion_map = {
+#     "histogram": "bar",
+#     "countplot": "bar",
+#     # "boxplot": "scatter",
+#     # "heatmap": "bar",
+#     # "regplot": "scatter",
+#     # "area": "line",
+#     # "violin": "scatter",
+# }
 
 # def load_dataset(name):
 #     global dataset_map
@@ -157,11 +31,11 @@ chart_conversion_map = {
 
 
 @router.get("/")
-def get_available_datasets():
+def get_available_datasets(): #1
     available_datasets = {
-        "available_datasets": list(dataset_map.keys()),
-        "available_charts": list(chart_requirements.keys())
-        }
+        "available_datasets": get_databases_name(),
+        "available_charts": get_charts_name_type()
+    }
     return available_datasets
 
 
@@ -188,21 +62,24 @@ def get_dataset_columns(dataset_name: str):
     }
 
 
-@router.post("/get-chart-requirements")
+@router.post("/get-chart-requirements") #2
 def get_chart_requirements(request_data: dict):
-    dataset_name = request_data.get("dataset")
-    chart_type = request_data.get("chart")
+    dataset_index = request_data.get("dataset_index")
+    chart_index = request_data.get("chart_index")
 
-    if dataset_name not in dataset_map:
-        raise HTTPException(status_code=404, detail="Dataset not found")
+    # if dataset_index not in dataset_map:
+    #     raise HTTPException(status_code=404, detail="Dataset not found")
 
-    if chart_type not in chart_requirements:
-        raise HTTPException(status_code=400, detail="Invalid chart type")
+    # if chart_type not in chart_requirements:
+    #     raise HTTPException(status_code=400, detail="Invalid chart type")
 
     # Load dataset
-    df = dataset_map[dataset_name]
+    df = get_database_cols(dataset_index)
+    if not df:
+        raise HTTPException(status_code=404, detail="Dataset not found")
 
     # Classify columns as numerical or categorical
+    
     columns = df.columns.tolist()
     numerical_columns = [col for col in df.columns if pd.api.types.is_numeric_dtype(df[col])]
     categorical_columns = [col for col in df.columns if pd.api.types.is_categorical_dtype(df[col]) or pd.api.types.is_object_dtype(df[col])]

@@ -25,8 +25,8 @@ export class DatasetService {
     return this.http.get<any[]>(`${this.apiUrl}/${datasetName}`);
   }
 
-  getChartRequirements(dataSet: string, chartType: string): Observable<any> {
-    let requestBody = {dataset: dataSet, chart: chartType};
+  getChartRequirements(dataSetIndex: number, chartTypeIndex: number): Observable<any> {
+    let requestBody = {dataset_index: dataSetIndex, chart_index: chartTypeIndex};
     return this.http.post(`${this.apiUrl}/get-chart-requirements`, requestBody);
   }
   
