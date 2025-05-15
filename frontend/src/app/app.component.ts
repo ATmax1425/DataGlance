@@ -3,11 +3,12 @@ import { RouterOutlet } from '@angular/router';
 import { HeaderComponent } from './header/header.component';
 import { ChartSelectComponent } from './chart-select/chart-select.component';
 import { VisualizeComponent } from './visualize/visualize.component';
+import { ParameterSelectComponent } from "./chart-select/parameter-select/parameter-select.component";
 
 @Component({
     selector: 'app-root',
     standalone: true,
-    imports: [RouterOutlet, HeaderComponent, ChartSelectComponent, VisualizeComponent],
+    imports: [RouterOutlet, HeaderComponent, ChartSelectComponent, VisualizeComponent, ParameterSelectComponent],
     templateUrl: './app.component.html',
     styleUrl: './app.component.scss'
 })

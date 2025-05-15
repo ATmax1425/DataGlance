@@ -34,18 +34,19 @@ databases = [
     },
 ]
 
-for i, database in enumerate(databases):
-    dataset = database["database"]
-    numeric_columns = dataset.select_dtypes(include=["number"]).columns.tolist()
+for i, database_doc in enumerate(databases):
+    database = database_doc["database"]
+
+    numeric_columns = database.select_dtypes(include=["number"]).columns.tolist()
     databases[i]["numerical_columns"] = numeric_columns
-    dataset[numeric_columns] = dataset[numeric_columns].fillna(dataset[numeric_columns].median())
+    database[numeric_columns] = database[numeric_columns].fillna(database[numeric_columns].median())
     
-    categorical_columns = dataset.select_dtypes(include=["object", "category"]).columns.tolist()
+    categorical_columns = database.select_dtypes(include=["object", "category"]).columns.tolist()
     databases[i]["categorical_columns"] = categorical_columns
     for col in categorical_columns:
-        mode_val = dataset[col].mode()
+        mode_val = database[col].mode()
         if not mode_val.empty:
-            dataset.loc[:, col] = dataset[col].fillna(mode_val[0])
+            database.loc[:, col] = database[col].fillna(mode_val[0])
 
 
 def get_databases_name():
@@ -58,14 +59,15 @@ def get_database(database_index):
             return database_doc["database"]
     return None
 
+
 def get_database_cols(database_index):
     for database_doc in databases:
         if database_doc["index"] == database_index:
             return {
                 "columns": database_doc["database"].columns.tolist(),
-                "numerical_columns": numeric_columns,
-                "categorical_columns": categorical_columns
+                "numerical_columns": database_doc["numerical_columns"],
+                "categorical_columns": database_doc["categorical_columns"]
             }
     return None
 
-# print(get_database_cols(1))
+print(get_database_cols(2))

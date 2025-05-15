@@ -4,7 +4,7 @@ import pandas as pd
 import numpy as np
 import logging
 
-from app.config.charts_config import plot_types, chart_requirements, get_charts_name_type
+from app.config.charts_config import chart_requirements, get_charts_name_type, get_chart_req
 from app.config.database_config import get_databases_name, get_database, get_database_cols
 
 logging.basicConfig(level=logging.INFO)
@@ -67,35 +67,19 @@ def get_chart_requirements(request_data: dict):
     dataset_index = request_data.get("dataset_index")
     chart_index = request_data.get("chart_index")
 
-    # if dataset_index not in dataset_map:
-    #     raise HTTPException(status_code=404, detail="Dataset not found")
-
-    # if chart_type not in chart_requirements:
-    #     raise HTTPException(status_code=400, detail="Invalid chart type")
-
-    # Load dataset
-    df = get_database_cols(dataset_index)
-    if not df:
-        raise HTTPException(status_code=404, detail="Dataset not found")
-
-    # Classify columns as numerical or categorical
+    requirements = get_database_cols(dataset_index)
+    if not requirements:
+        error_mes = f"Dataset with id {dataset_index}, not found"
+        logger.error(error_mes)
+        raise HTTPException(status_code=404, detail=error_mes)
     
-    columns = df.columns.tolist()
-    numerical_columns = [col for col in df.columns if pd.api.types.is_numeric_dtype(df[col])]
-    categorical_columns = [col for col in df.columns if pd.api.types.is_categorical_dtype(df[col]) or pd.api.types.is_object_dtype(df[col])]
-
-    logger.info({
-        "required_keys": chart_requirements[chart_type],
-        "columns": columns,
-        "numerical_columns": numerical_columns,
-        "categorical_columns": categorical_columns
-    })
-    return {
-        "required_keys": chart_requirements[chart_type],
-        "columns": columns,
-        "numerical_columns": numerical_columns,
-        "categorical_columns": categorical_columns
-    }
+    requirements["required_keys"] = get_chart_req(chart_index)
+    if not requirements["required_keys"]:
+        error_mes = f"Chart with id {chart_index} not found"
+        logger.error(error_mes)
+        raise HTTPException(status_code=404, detail=error_mes)
+    
+    return requirements
 
 
 @router.post("/generate-chart-data")

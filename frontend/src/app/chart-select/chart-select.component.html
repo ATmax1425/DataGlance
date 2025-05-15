@@ -4,17 +4,17 @@
 <div>
     <!-- Database Selection -->
     <label>Select Dataset:</label>
-    <select [(ngModel)]="selectedDatabase" (change)="onChange()">
+    <select [(ngModel)]="selectedDatabaseIndex" (change)="onChange()">
       @for (db of databases; track db) {
-        <option [value]="db">{{ db }}</option>
+        <option [ngValue]="db.index">{{ db.name }}</option>
       }
     </select>
 
     <!-- Chart Type Selection -->
     <label>Select Chart Type:</label>
-    <select [(ngModel)]="selectedChart" (change)="onChange()">
+    <select [(ngModel)]="selectedChartIndex" (change)="onChange()">
       @for (chart of chartTypes; track chart) {
-        <option [value]="chart">{{ chart }}</option>
+        <option [ngValue]="chart.index">{{ chart.name }}</option>
       }
     </select>
 

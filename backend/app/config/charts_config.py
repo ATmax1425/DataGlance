@@ -7,7 +7,7 @@ plot_types = {
 chart_requirements = [
     {
         "index": 1,
-        "chart_name": "Scatter Chart",
+        "name": "Scatter Chart",
         "chartjs_type": "scatter",
         "plot_type": 1,
         "required": ["x_value", "y_value"],
@@ -20,7 +20,7 @@ chart_requirements = [
         }
     },{
         "index": 2,
-        "chart_name": "Line Chart",
+        "name": "Line Chart",
         "chartjs_type": "line",
         "plot_type": 1,
         "required": ["x_value", "y_value"],
@@ -32,7 +32,7 @@ chart_requirements = [
         }
     },{
         "index": 3,
-        "chart_name": "Histogram Chart",
+        "name": "Histogram Chart",
         "chartjs_type": "bar",
         "plot_type": 2,
         "required": ["x_value"],
@@ -44,7 +44,7 @@ chart_requirements = [
         }
     },{
         "index": 4,
-        "chart_name": "Bar Chart",
+        "name": "Bar Chart",
         "chartjs_type": "bar",
         "plot_type": 3,
         "required": ["x_value", "y_value"],
@@ -56,7 +56,7 @@ chart_requirements = [
         }
     },{
         "index": 5,
-        "chart_name": "count Chart",
+        "name": "count Chart",
         "chartjs_type": "bar",
         "plot_type": 3,
         "required": ["x_value"],
@@ -67,7 +67,7 @@ chart_requirements = [
         }
     },{
         "index": 6,
-        "chart_name": "Pie Chart",
+        "name": "Pie Chart",
         "chartjs_type": "pie",
         "plot_type": 3,
         "required": ["x_value", "y_value"],
@@ -140,17 +140,14 @@ def get_charts_name_type():
     for i in chart_requirements:
         charts_info.append({
             "index": i["index"],
-            "chart_name": i["chart_name"], 
+            "name": i["name"], 
             "plot_type": plot_types[i["plot_type"]]
             })
-    return 
+    return charts_info
 
 
-# def get_columns(chart_index):
-#     for chart_doc in chart_requirements:
-#         if chart_doc["index"] == chart_index:
-
-#         columns = df.columns.tolist()
-
-#         numerical_columns = [col for col in df.columns if pd.api.types.is_numeric_dtype(df[col])]
-#         categorical_columns = [col for col in df.columns if pd.api.types.is_categorical_dtype(df[col]) or pd.api.types.is_object_dtype(df[col])]
+def get_chart_req(chart_index):
+    for chart_doc in chart_requirements:
+        if chart_doc["index"] == chart_index:
+            return chart_doc
+    return None

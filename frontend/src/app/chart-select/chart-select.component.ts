@@ -34,30 +34,30 @@ export class ChartSelectComponent implements OnInit{
 
   constructor(private datasetService: DatasetService) {}
 
-  ngOnInit() {
+  ngOnInit(): void{  
     this.datasetService.getAvailableDatasets().subscribe((response) => {
       console.log("getAvailableDatasets Response:", response);
       this.databases = response.available_datasets;
       this.chartTypes = response.available_charts;
       this.selectedDatabaseIndex = this.databases.length > 0 ? this.databases[0]["index"] : 0;
       this.selectedChartIndex = this.chartTypes.length > 0? this.chartTypes[0]["index"] : 0;
-      if (this.selectedDatabase && this.selectedChartIndex){
+      if (this.selectedDatabaseIndex && this.selectedChartIndex){
         this.fetchChartRequirements();
       }
     });
   }
 
-  fetchChartRequirements(){
+  fetchChartRequirements(): void{
     this.datasetService.getChartRequirements(
-      this.selectedDatabase,
-      this.selectedChart
+      this.selectedDatabaseIndex,
+      this.selectedChartIndex
     ).subscribe((data) => {
-      this.fieldsMap = data.required_keys
-      this.requiredFields = data.required_keys.required
-      this.optionalFields = data.required_keys.optional || []
-      this.columns = data.columns
-      this.numericalColumns = data.numerical_columns
-      this.categoricalColumns = data.categorical_columns
+      this.fieldsMap = data.required_keys;
+      this.requiredFields = data.required_keys.required;
+      this.optionalFields = data.required_keys.optional || [];
+      this.columns = data.columns;
+      this.numericalColumns = data.numerical_columns;
+      this.categoricalColumns = data.categorical_columns;
     });
   }
 
@@ -82,7 +82,7 @@ export class ChartSelectComponent implements OnInit{
   }
 
   onChange(): void {
-    if (this.selectedDatabase && this.selectedChart) {
+    if (this.selectedDatabaseIndex && this.selectedChartIndex) {
       this.fetchChartRequirements();
       this.formData = {};
     }
